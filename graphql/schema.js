@@ -1,5 +1,5 @@
 const { GraphQLSchema, GraphQLObjectType, GraphQLString } = require(`graphql`)
-const { signup, signin } = require(`./resolvers/userResolvers`)
+const { signup, signin, verifyCode } = require(`./resolvers/userResolvers`)
 
 // Empty Query type (required for a valid GraphQL schema)
 const RootQuery = new GraphQLObjectType({
@@ -18,6 +18,7 @@ const Mutation = new GraphQLObjectType({
     fields: {
         signup,
         signin,
+        verifyCode,
     }
 })
 

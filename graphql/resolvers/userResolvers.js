@@ -3,6 +3,8 @@ const bcrypt = require(`bcryptjs`);
 const User = require(`../../models/User`);
 const hashPassword = require(`../../utils/hashPassword`);
 const generateToken = require(`../../utils/generateToken`);
+const generateCode = require(`../../utils/generateCode`);
+const sendEmail = require(`../../utils/sendEmail`);
 
 // Define a custom type for responses
 const AuthResponseType = new GraphQLObjectType({
@@ -10,6 +12,16 @@ const AuthResponseType = new GraphQLObjectType({
   fields: {
     message: { type: GraphQLString },
     token: { type: GraphQLString },
+  },
+});
+
+// define a custom type for general responses
+const ResponseType = new GraphQLObjectType({
+  name: `ResponseType`,
+  fields: {
+    code: { type: GraphQLString },
+    status: { type: GraphQLString },
+    message: { type: GraphQLString },
   },
 });
 
@@ -28,7 +40,6 @@ const signup = {
   async resolve(parent, args) {
     try {
       // Check if email already exists
-      console.log("Signup args received:", args);
       const existingUser = await User.findOne({ email: args.email });
       if (existingUser) {
         throw new Error(`Email already registered`);
@@ -36,7 +47,6 @@ const signup = {
 
       // Hash Password
       const hashedPassword = await hashPassword(args.password);
-      console.log("Password hashed successfully");
 
       // Create new User
       const newUser = new User({
@@ -49,15 +59,13 @@ const signup = {
       });
 
       const savedUser = await newUser.save();
-      console.log("User saved successfully:", savedUser);
 
       // Generate JWT token
       const token = generateToken(newUser);
-      console.log("JWT generated successfully:", token);
       return {
         message: `User registered successfully`,
         token,
-      }
+      };
     } catch (error) {
       throw new Error(error.message);
     }
@@ -98,4 +106,53 @@ const signin = {
   },
 };
 
-module.exports = { signup, signin };
+// Resolver for verify code
+const verifyCode = {
+  type: ResponseType,
+  args: {
+    email: { type: new GraphQLNonNull(GraphQLString) },
+  },
+
+  async resolve(parent, args) {
+    try {
+      const user = await User.findOne({ email: args.email });
+      if (!user) {
+        return {
+          code: `401`,
+          status: `false`,
+          message: `User not found`,
+        };
+      }
+
+      if (user.isVerified) {
+        return {
+          code: `400`,
+          status: `false`,
+          message: `User Already Verified`,
+        };
+      }
+
+      const code = generateCode(6);
+      user.verificationCode = code;
+      await user.save();
+
+      await sendEmail({
+        emailTo: user.email,
+        subject: `Email Verification Code`,
+        code: code,
+        content: `verify your account`,
+      });
+
+      return {
+        code: `200`,
+        status: `true`,
+        message: `verification code sent successfully`,
+      };
+    } catch (error) {
+      console.error(`Error in verifyCode resolver`, error.message);
+      throw new Error(`Internal server code`);
+    }
+  },
+};
+
+module.exports = { signup, signin, verifyCode };
