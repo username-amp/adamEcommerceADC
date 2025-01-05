@@ -7,7 +7,7 @@ const discountSchema = new mongoose.Schema({
     unique: true,
   },
 
-  discountPeercentage: {
+  discountPercentage: {
     type: Number,
     required: true,
     min: 0,

@@ -24,7 +24,7 @@ const marketingEmailSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: [`delivered`, `bounced`, `opened`],
+    enum: [`delivered`, `bounced`, `opened`, `returned`],
   },
 });
 

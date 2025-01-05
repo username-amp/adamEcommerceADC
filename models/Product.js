@@ -38,6 +38,21 @@ const productSchema = new mongoose.Schema({
   sizes: {
     type: [String],
   },
+
+  tags: {
+    type: [String],
+    enum: [
+      "bestseller",
+      "hot_sales",
+      "new_arrival",
+      "sale",
+      "featured",
+      "limited_edition",
+      "organic",
+      "sustainable",
+      "handmade",
+    ],
+  },
 });
 
 module.exports = mongoose.model(`Product`, productSchema);

@@ -24,6 +24,11 @@ const loyaltyProgramSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+
+  badge: {
+    type: String,
+    enum: [`Bronze`, `Silver`, `Gold`, `Platinum`],
+  }
 });
 
 module.exports = mongoose.model(`LoyaltyProgram`, loyaltyProgramSchema);
