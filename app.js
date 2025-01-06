@@ -5,6 +5,7 @@ const morgan = require(`morgan`);
 const cors = require(`cors`);
 const cookieParser = require(`cookie-parser`);
 
+
 dotenv.config();
 
 /*
@@ -29,6 +30,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ limit: `500mb`, extended: true }));
 
 app.use(morgan(`dev`));
+
+app.use(cors({
+  origin: `http://localhost:3000`,
+  methods: `GET,HEAD,PUT,PATCH,POST,DELETE`,
+  credentials: true
+}))
 
 app.use(
   "/graphql",

@@ -25,16 +25,17 @@ const ResponseType = new GraphQLObjectType({
   },
 });
 
-// Resolver for Signup
+/* ----- Resolver for SignUp ----- */
 const signup = {
   type: AuthResponseType,
   args: {
     name: { type: new GraphQLNonNull(GraphQLString) },
+    username: { type: new GraphQLNonNull(GraphQLString) },
     email: { type: new GraphQLNonNull(GraphQLString) },
     password: { type: new GraphQLNonNull(GraphQLString) },
     role: { type: new GraphQLNonNull(GraphQLString) },
-    address: { type: new GraphQLNonNull(GraphQLString) },
-    phoneNumber: { type: new GraphQLNonNull(GraphQLString) },
+    address: { type: GraphQLString },
+    phoneNumber: { type: GraphQLString },
   },
 
   async resolve(parent, args) {
@@ -42,7 +43,23 @@ const signup = {
       // Check if email already exists
       const existingUser = await User.findOne({ email: args.email });
       if (existingUser) {
-        throw new Error(`Email already registered`);
+        return {
+          code: 400,
+          status: false,
+          message: `Email already exists`,
+        };
+      }
+
+      // Check if username already exists
+      const existingUserByUsername = await User.findOne({
+        username: args.username,
+      });
+      if (existingUserByUsername) {
+        return {
+          code: 400,
+          status: false,
+          message: `Username already exists`,
+        };
       }
 
       // Hash Password
@@ -51,11 +68,12 @@ const signup = {
       // Create new User
       const newUser = new User({
         name: args.name,
+        username: args.username,
         email: args.email,
         password: hashedPassword,
         role: args.role,
-        address: args.address,
-        phoneNumber: args.phoneNumber,
+        address: args.address || null,
+        phoneNumber: args.phoneNumber || null,
       });
 
       const savedUser = await newUser.save();
@@ -72,32 +90,48 @@ const signup = {
   },
 };
 
-// Resolver for Signin
+/* Resolver for SignIn */
 const signin = {
   type: AuthResponseType,
   args: {
-    email: { type: new GraphQLNonNull(GraphQLString) },
+    emailOrUsername: { type: new GraphQLNonNull(GraphQLString) },
     password: { type: new GraphQLNonNull(GraphQLString) },
   },
 
   async resolve(parent, args) {
     try {
       // Check if user exists
-      const user = await User.findOne({ email: args.email });
+      const user = await User.findOne({
+        $or: [
+          { email: { $regex: new RegExp(`^${args.emailOrUsername}$`, "i") } },
+          {
+            username: { $regex: new RegExp(`^${args.emailOrUsername}$`, "i") },
+          },
+        ],
+      });
+
       if (!user) {
-        throw new Error(`User not found`);
+        return {
+          code: 400,
+          status: false,
+          message: `User not found`,
+        };
       }
 
       // Validate password
       const isMatch = await bcrypt.compare(args.password, user.password);
       if (!isMatch) {
-        throw new Error(`Invalid password`);
+        return {
+          code: 400,
+          status: false,
+          message: `Invalid password`,
+        };
       }
 
       // Generate JWT Token
       const token = generateToken(user);
       return {
-        message: `User logged in successfully`,
+        message: `User logged in Successfully`,
         token,
       };
     } catch (error) {
@@ -106,7 +140,7 @@ const signin = {
   },
 };
 
-// Resolver for verify code
+/* Resolver for verifyCode */
 const verifyCode = {
   type: ResponseType,
   args: {
