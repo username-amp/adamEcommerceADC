@@ -30,11 +30,23 @@ const userSchema = new mongoose.Schema({
     default: `customer`,
   },
 
-  address: {
+  phoneNumber: {
     type: String,
+    required: true,
   },
 
-  phoneNumber: {
+  gender: {
+    type: String,
+    enum: [`Male`, `Female`, `Other`],
+    required: true,
+  },
+
+  birthdate: {
+    type: Date,
+    required: true,
+  },
+
+  address: {
     type: String,
   },
 
@@ -44,6 +56,12 @@ const userSchema = new mongoose.Schema({
       ref: `Order`,
     },
   ],
+
+  termsd: {
+    type: Boolean,
+    required: true,
+    default: false,
+  }
 });
 
 module.exports = mongoose.model(`User`, userSchema)

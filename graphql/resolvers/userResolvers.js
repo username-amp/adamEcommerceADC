@@ -33,13 +33,58 @@ const signup = {
     username: { type: new GraphQLNonNull(GraphQLString) },
     email: { type: new GraphQLNonNull(GraphQLString) },
     password: { type: new GraphQLNonNull(GraphQLString) },
+    confirmPassword: { type: new GraphQLNonNull(GraphQLString) },
     role: { type: new GraphQLNonNull(GraphQLString) },
     address: { type: GraphQLString },
     phoneNumber: { type: GraphQLString },
+    gender: { type: new GraphQLNonNull(GraphQLString) },
+    birthdate: { type: new GraphQLNonNull(GraphQLString) },
+    terms: { type: GraphQLString },
   },
 
   async resolve(parent, args) {
     try {
+      // Validate Confirm Password
+      if (args.password !== args.confirmPassword) {
+        return {
+          code: 400,
+          status: false,
+          message: `Password do not match`,
+        };
+      }
+
+      // Validate Birthdate
+      const birthdate = new Date(args.birthdate);
+      const currentDate = new Date();
+
+      // Check if the birthdate is valid
+      if (isNaN(birthdate.getTime())) {
+        return {
+          code: 400,
+          status: false,
+          message: "Invalid birthdate. Please provide a valid date.",
+        };
+      }
+
+      // Check if the birthdate is in the future
+      if (birthdate >= currentDate) {
+        return {
+          code: 400,
+          status: false,
+          message: "Invalid birthdate. Birthdate must be in the past.",
+        };
+      }
+
+      // Validate phone number
+      const phoneRegex = /^09\d{9}$/;
+      if (args.phoneNumber && !phoneRegex.test(args.phoneNumber)) {
+        return {
+          code: 400,
+          status: false,
+          message: `Invalid phone number`,
+        };
+      }
+
       // Check if email already exists
       const existingUser = await User.findOne({ email: args.email });
       if (existingUser) {
@@ -74,15 +119,20 @@ const signup = {
         role: args.role,
         address: args.address || null,
         phoneNumber: args.phoneNumber || null,
+        gender: args.gender,
+        birthdate: birthdate,
+        terms: args.terms || null,
       });
 
       const savedUser = await newUser.save();
 
-      // Generate JWT token
-      const token = generateToken(newUser);
+      const token = generateToken(savedUser);
+
       return {
+        code: 200,
+        status: true,
         message: `User registered successfully`,
-        token,
+        token, // Return the generated token
       };
     } catch (error) {
       throw new Error(error.message);
@@ -90,7 +140,7 @@ const signup = {
   },
 };
 
-/* Resolver for SignIn */
+/* ----- Resolver for SignIn ----- */
 const signin = {
   type: AuthResponseType,
   args: {
@@ -140,7 +190,7 @@ const signin = {
   },
 };
 
-/* Resolver for verifyCode */
+/* ----- Resolver for VerifyCode ----- */
 const verifyCode = {
   type: ResponseType,
   args: {
