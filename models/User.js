@@ -38,12 +38,10 @@ const userSchema = new mongoose.Schema({
   gender: {
     type: String,
     enum: [`Male`, `Female`, `Other`],
-    required: true,
   },
 
   birthdate: {
     type: Date,
-    required: true,
   },
 
   address: {
@@ -61,7 +59,15 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
     default: false,
-  }
+  },
+
+  // New fields for OTP verification
+  verificationCode: {
+    type: String, // Store the OTP
+  },
+  verificationCodeExpiry: {
+    type: Date, // Store the expiry timestamp for the OTP
+  },
 });
 
-module.exports = mongoose.model(`User`, userSchema)
+module.exports = mongoose.model(`User`, userSchema);

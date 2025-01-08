@@ -158,6 +158,7 @@ const signin = {
             username: { $regex: new RegExp(`^${args.emailOrUsername}$`, "i") },
           },
         ],
+        re,
       });
 
       if (!user) {
@@ -190,8 +191,114 @@ const signin = {
   },
 };
 
-/* ----- Resolver for VerifyCode ----- */
+/* ----- Resolver for Verify Code ----- */
 const verifyCode = {
+  type: ResponseType,
+  args: {
+    email: { type: new GraphQLNonNull(GraphQLString) },
+  },
+
+  async resolve(parent, args) {
+    try {
+      const user = await User.findOne({ email: args.email });
+
+      if (!user) {
+        return {
+          code: "400",
+          status: "false",
+          message: "User not found",
+        };
+      }
+
+      if (user.isVerified) {
+        return {
+          code: "400",
+          status: "false",
+          message: "User Already Verified",
+        };
+      }
+
+      // Generate a 6-digit OTP code
+      const code = generateCode(6);
+      user.verificationCode = code; // Save the OTP
+      user.verificationCodeExpiry = Date.now() + 15 * 60 * 1000; // Set expiry to 15 minutes
+      await user.save(); // Save the user with the new fields
+
+      // Send email
+      await sendEmail({
+        emailTo: user.email,
+        subject: "Email Verification Code",
+        code: code,
+        content: "Please verify your account using the code provided.",
+      });
+
+      return {
+        code: "200",
+        status: "true",
+        message: "Verification code sent successfully",
+      };
+    } catch (error) {
+      console.error("Error in verifyCode resolver:", error.message);
+      throw new Error("Internal server error");
+    }
+  },
+};
+
+/* ----- Resolver for Confirm Code ----- */
+const confirmCode = {
+  type: ResponseType,
+  args: {
+    email: { type: new GraphQLNonNull(GraphQLString) },
+    code: { type: new GraphQLNonNull(GraphQLString) },
+  },
+
+  async resolve(parent, args) {
+    try {
+      const user = await User.findOne({ email: args.email });
+
+      if (!user) {
+        return {
+          code: "401",
+          status: "false",
+          message: "User not found",
+        };
+      }
+
+      if (user.verificationCode !== args.code) {
+        return {
+          code: "400",
+          status: "false",
+          message: "Invalid Code",
+        };
+      }
+
+      if (Date.now() > user.verificationCodeExpiry) {
+        return {
+          code: "400",
+          status: "false",
+          message: "Code Expired",
+        };
+      }
+
+      user.isVerified = true; // Set the user as verified
+      user.verificationCode = null; // Clear the OTP
+      user.verificationCodeExpiry = null; // Clear the expiry time
+      await user.save();
+
+      return {
+        code: "200",
+        status: "true",
+        message: "User verified successfully",
+      };
+    } catch (error) {
+      console.error("Error in confirmCode resolver:", error.message);
+      throw new Error("Internal server error");
+    }
+  },
+};
+
+/* ----- Resolver for ResetPasswordRequest ----- */
+const resetPasswordRequest = {
   type: ResponseType,
   args: {
     email: { type: new GraphQLNonNull(GraphQLString) },
@@ -202,41 +309,76 @@ const verifyCode = {
       const user = await User.findOne({ email: args.email });
       if (!user) {
         return {
-          code: `401`,
-          status: `false`,
+          code: 401,
+          status: false,
           message: `User not found`,
         };
       }
 
-      if (user.isVerified) {
-        return {
-          code: `400`,
-          status: `false`,
-          message: `User Already Verified`,
-        };
-      }
-
       const code = generateCode(6);
-      user.verificationCode = code;
+      user.passwordResetCode = code;
+      user.passwordResetCodeExpiry = Date.now() + 15 * 60 * 1000; // 15 minutes
       await user.save();
 
       await sendEmail({
         emailTo: user.email,
-        subject: `Email Verification Code`,
+        subject: `Password Reset Request`,
         code: code,
-        content: `verify your account`,
+        content: `reset your password`,
       });
 
       return {
-        code: `200`,
-        status: `true`,
-        message: `verification code sent successfully`,
+        code: 200,
+        status: true,
+        message: `Password reset code send successfully`,
       };
     } catch (error) {
-      console.error(`Error in verifyCode resolver`, error.message);
-      throw new Error(`Internal server code`);
+      console.error(`Error in resetPasswordRequest resolver`, error.message);
+      throw new error(`Internal server error`);
     }
   },
 };
 
-module.exports = { signup, signin, verifyCode };
+/* ----- Resolver for ResetPassword ----- */
+/* ----- Resolver for ResetPassword ----- */
+const resetPassword = {
+  type: ResponseType,
+  args: {
+    email: { type: new GraphQLNonNull(GraphQLString) },
+    newPassword: { type: new GraphQLNonNull(GraphQLString) },
+  },
+
+  async resolve(parent, args) {
+    try {
+      const user = await User.findOne({ email: args.email });
+      if (!user) {
+        return {
+          code: 401,
+          status: false,
+          message: `User not found`,
+        };
+      }
+
+      user.password = await hashPassword(args.newPassword);
+      await user.save();
+
+      return {
+        code: 200,
+        status: true,
+        message: `Password updated successfully`,
+      };
+    } catch (error) {
+      console.error(`Error in resetPassword resolver`, error.message);
+      throw new error(`Internal server error`);
+    }
+  },
+};
+
+module.exports = {
+  signup,
+  signin,
+  verifyCode,
+  confirmCode,
+  resetPasswordRequest,
+  resetPassword,
+};
