@@ -15,6 +15,21 @@ const AuthResponseType = new GraphQLObjectType({
   },
 });
 
+// Define a UserType to represent the user object in GraphQL
+const UserType = new GraphQLObjectType({
+  name: `User`,
+  fields: {
+    name: { type: GraphQLString },
+    username: { type: GraphQLString },
+    email: { type: GraphQLString },
+    role: { type: GraphQLString },
+    phoneNumber: { type: GraphQLString },
+    gender: { type: GraphQLString },
+    birthdate: { type: GraphQLString },
+    address: { type: GraphQLString },
+  },
+});
+
 // define a custom type for general responses
 const ResponseType = new GraphQLObjectType({
   name: `ResponseType`,
@@ -340,7 +355,6 @@ const resetPasswordRequest = {
 };
 
 /* ----- Resolver for ResetPassword ----- */
-/* ----- Resolver for ResetPassword ----- */
 const resetPassword = {
   type: ResponseType,
   args: {
@@ -374,6 +388,32 @@ const resetPassword = {
   },
 };
 
+/* ----- Resolver for GetUsernameByEmail ----- */
+const getUsernameByEmail = {
+  type: UserType,
+  args: {
+    email: { type: GraphQLString }, // Pass the email as an argument
+  },
+  resolve: async (_, { email }) => {
+    try {
+      // Find the user by email
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Return the user object
+      return {
+        username: user.username,
+      };
+    } catch (error) {
+      console.error("Error fetching user:", error.message); // Debugging: Log the error
+      throw new Error(error.message);
+    }
+  },
+};
+
 module.exports = {
   signup,
   signin,
@@ -381,4 +421,5 @@ module.exports = {
   confirmCode,
   resetPasswordRequest,
   resetPassword,
+  getUsernameByEmail,
 };

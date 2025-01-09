@@ -6,16 +6,14 @@ const {
   confirmCode,
   resetPasswordRequest,
   resetPassword,
+  getUsernameByEmail,
 } = require(`./resolvers/userResolvers`);
 
 // Empty Query type (required for a valid GraphQL schema)
 const RootQuery = new GraphQLObjectType({
   name: `RootQueryType`,
   fields: {
-    hello: {
-      type: GraphQLString,
-      resolve: () => `Welcome to the api`,
-    },
+    getUsernameByEmail,
   },
 });
 
