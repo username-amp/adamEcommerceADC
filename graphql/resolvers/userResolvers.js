@@ -173,7 +173,6 @@ const signin = {
             username: { $regex: new RegExp(`^${args.emailOrUsername}$`, "i") },
           },
         ],
-        re,
       });
 
       if (!user) {
@@ -201,6 +200,48 @@ const signin = {
         token,
       };
     } catch (error) {
+      throw new Error(error.message);
+    }
+  },
+};
+
+/* ----- Resolver for Google Signin ----- */
+const googleSignin = {
+  type: AuthResponseType,
+  args: {
+    email: { type: GraphQLNonNull(GraphQLString) },
+    name: { type: GraphQLNonNull(GraphQLString) },
+    image: { type: GraphQLString },
+  },
+
+  async resolve(parent, args) {
+    try {
+      console.log("Google sign-in resolver triggered with args:", args);
+
+      let user = await User.findOne({ email: args.email });
+      if (user) {
+        console.log("User found:", user);
+      } else {
+        console.log("User not found. Creating new user...");
+        user = new User({
+          email: args.email,
+          name: args.name,
+          image: args.image,
+          provider: "google",
+        });
+        await user.save();
+        console.log("New user created:", user);
+      }
+
+      const token = generateToken(user);
+      console.log("Generated token:", token);
+
+      return {
+        message: "Google Signin Successfully",
+        token,
+      };
+    } catch (error) {
+      console.error("Error in Google sign-in resolver:", error.message);
       throw new Error(error.message);
     }
   },
@@ -417,6 +458,7 @@ const getUsernameByEmail = {
 module.exports = {
   signup,
   signin,
+  googleSignin,
   verifyCode,
   confirmCode,
   resetPasswordRequest,

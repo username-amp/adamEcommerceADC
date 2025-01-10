@@ -7,6 +7,7 @@ const {
   resetPasswordRequest,
   resetPassword,
   getUsernameByEmail,
+  googleSignin
 } = require(`./resolvers/userResolvers`);
 
 // Empty Query type (required for a valid GraphQL schema)
@@ -27,6 +28,7 @@ const Mutation = new GraphQLObjectType({
     confirmCode,
     resetPasswordRequest,
     resetPassword,
+    googleSignin
   },
 });
 
