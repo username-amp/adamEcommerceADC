@@ -223,12 +223,21 @@ const googleSignin = {
         console.log("User found:", user);
       } else {
         console.log("User not found. Creating new user...");
+
+        // Generate default values for required fields
+        const defaultUsername = args.email.split("@")[0]; // Use the email prefix as the username
+        const defaultPassword = generateCode(8); // Use your `generateCode` utility to generate a random password
+
         user = new User({
           email: args.email,
           name: args.name,
           image: args.image,
           provider: "google",
+          username: defaultUsername,
+          password: defaultPassword, // You can store a hashed password here if necessary
+          phoneNumber: null, // Optional: Or set a default value like "N/A"
         });
+
         await user.save();
         console.log("New user created:", user);
       }
@@ -242,6 +251,57 @@ const googleSignin = {
       };
     } catch (error) {
       console.error("Error in Google sign-in resolver:", error.message);
+      throw new Error(error.message);
+    }
+  },
+};
+
+/* ----- Resolver for Facebook Signin ----- */
+const facebookSignin = {
+  type: AuthResponseType,
+  args: {
+    email: { type: GraphQLNonNull(GraphQLString) },
+    name: { type: GraphQLNonNull(GraphQLString) },
+    image: { type: GraphQLString },
+  },
+
+  async resolve(parent, args) {
+    try {
+      console.log("Facebook sign-in resolver triggered with args:", args);
+
+      let user = await User.findOne({ email: args.email });
+      if (user) {
+        console.log("User found:", user);
+      } else {
+        console.log("User not found. Creating new user...");
+
+        // Generate default values for required fields
+        const defaultUsername = args.email.split("@")[0];
+        const defaultPassword = generateCode(8); // Use your `generateCode` utility for password
+
+        user = new User({
+          email: args.email,
+          name: args.name,
+          image: args.image,
+          provider: "facebook",
+          username: defaultUsername,
+          password: hashPassword(defaultPassword), // Hash this password if needed
+          phoneNumber: null,
+        });
+
+        await user.save();
+        console.log("New user created:", user);
+      }
+
+      const token = generateToken(user);
+      console.log("Generated token:", token);
+
+      return {
+        message: "Facebook Signin Successfully",
+        token,
+      };
+    } catch (error) {
+      console.error("Error in Facebook sign-in resolver:", error.message);
       throw new Error(error.message);
     }
   },
@@ -459,6 +519,7 @@ module.exports = {
   signup,
   signin,
   googleSignin,
+  facebookSignin,
   verifyCode,
   confirmCode,
   resetPasswordRequest,
