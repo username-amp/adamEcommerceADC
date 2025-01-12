@@ -8,8 +8,7 @@ const {
   resetPassword,
   getUsernameByEmail,
   googleSignin,
-  facebookSignin
-
+  facebookSignin,
 } = require(`./resolvers/userResolvers`);
 
 // Empty Query type (required for a valid GraphQL schema)
@@ -31,7 +30,7 @@ const Mutation = new GraphQLObjectType({
     resetPasswordRequest,
     resetPassword,
     googleSignin,
-    facebookSignin
+    facebookSignin,
   },
 });
 

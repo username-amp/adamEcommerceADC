@@ -216,8 +216,6 @@ const googleSignin = {
 
   async resolve(parent, args) {
     try {
-      console.log("Google sign-in resolver triggered with args:", args);
-
       let user = await User.findOne({ email: args.email });
       if (user) {
         console.log("User found:", user);
