@@ -222,9 +222,8 @@ const googleSignin = {
       } else {
         console.log("User not found. Creating new user...");
 
-        // Generate default values for required fields
-        const defaultUsername = args.email.split("@")[0]; // Use the email prefix as the username
-        const defaultPassword = generateCode(8); // Use your `generateCode` utility to generate a random password
+        const defaultUsername = args.email.split("@")[0];
+        const defaultPassword = generateCode(8);
 
         user = new User({
           email: args.email,
@@ -232,8 +231,8 @@ const googleSignin = {
           image: args.image,
           provider: "google",
           username: defaultUsername,
-          password: defaultPassword, // You can store a hashed password here if necessary
-          phoneNumber: null, // Optional: Or set a default value like "N/A"
+          password: hashPassword(defaultPassword), // You can store a hashed password here if necessary
+          phoneNumber: null,
         });
 
         await user.save();
@@ -273,9 +272,8 @@ const facebookSignin = {
       } else {
         console.log("User not found. Creating new user...");
 
-        // Generate default values for required fields
         const defaultUsername = args.email.split("@")[0];
-        const defaultPassword = generateCode(8); // Use your `generateCode` utility for password
+        const defaultPassword = generateCode(8);
 
         user = new User({
           email: args.email,
@@ -283,7 +281,7 @@ const facebookSignin = {
           image: args.image,
           provider: "facebook",
           username: defaultUsername,
-          password: hashPassword(defaultPassword), // Hash this password if needed
+          password: hashPassword(defaultPassword),
           phoneNumber: null,
         });
 
@@ -334,9 +332,9 @@ const verifyCode = {
 
       // Generate a 6-digit OTP code
       const code = generateCode(6);
-      user.verificationCode = code; // Save the OTP
-      user.verificationCodeExpiry = Date.now() + 15 * 60 * 1000; // Set expiry to 15 minutes
-      await user.save(); // Save the user with the new fields
+      user.verificationCode = code;
+      user.verificationCodeExpiry = Date.now() + 15 * 60 * 1000; // 15 minutes
+      await user.save();
 
       // Send email
       await sendEmail({
@@ -394,9 +392,9 @@ const confirmCode = {
         };
       }
 
-      user.isVerified = true; // Set the user as verified
-      user.verificationCode = null; // Clear the OTP
-      user.verificationCodeExpiry = null; // Clear the expiry time
+      user.isVerified = true;
+      user.verificationCode = null;
+      user.verificationCodeExpiry = null;
       await user.save();
 
       return {
