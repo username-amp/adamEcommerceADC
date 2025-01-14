@@ -225,13 +225,15 @@ const googleSignin = {
         const defaultUsername = args.email.split("@")[0];
         const defaultPassword = generateCode(8);
 
+        const hashedPassword = await hashPassword(defaultPassword);
+
         user = new User({
           email: args.email,
           name: args.name,
           image: args.image,
           provider: "google",
           username: defaultUsername,
-          password: hashPassword(defaultPassword), // You can store a hashed password here if necessary
+          password: hashedPassword, // You can store a hashed password here if necessary
           phoneNumber: null,
         });
 
