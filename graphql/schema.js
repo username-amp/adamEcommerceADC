@@ -19,7 +19,7 @@ const RootQuery = new GraphQLObjectType({
   },
 });
 
-// Root Mutation (signup, signin, verifyCode, confirmCode, resetPasswordRequest, resetPassword)
+// Root Mutation (signup, signin, verifyCode, confirmCode, resetPasswordRequest, resetPassword, googleSignin, facebookSignin)
 const Mutation = new GraphQLObjectType({
   name: `Mutation`,
   fields: {

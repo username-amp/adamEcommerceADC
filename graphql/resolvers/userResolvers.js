@@ -1,44 +1,15 @@
-const { GraphQLString, GraphQLNonNull, GraphQLObjectType } = require(`graphql`);
+const { GraphQLString, GraphQLNonNull } = require(`graphql`);
 const bcrypt = require(`bcryptjs`);
 const User = require(`../../models/User`);
+// from utils
 const hashPassword = require(`../../utils/hashPassword`);
 const generateToken = require(`../../utils/generateToken`);
 const generateCode = require(`../../utils/generateCode`);
 const sendEmail = require(`../../utils/sendEmail`);
-
-// Define a custom type for responses
-const AuthResponseType = new GraphQLObjectType({
-  name: `AuthResponseType`,
-  fields: {
-    message: { type: GraphQLString },
-    token: { type: GraphQLString },
-  },
-});
-
-// Define a UserType to represent the user object in GraphQL
-const UserType = new GraphQLObjectType({
-  name: `User`,
-  fields: {
-    name: { type: GraphQLString },
-    username: { type: GraphQLString },
-    email: { type: GraphQLString },
-    role: { type: GraphQLString },
-    phoneNumber: { type: GraphQLString },
-    gender: { type: GraphQLString },
-    birthdate: { type: GraphQLString },
-    address: { type: GraphQLString },
-  },
-});
-
-// define a custom type for general responses
-const ResponseType = new GraphQLObjectType({
-  name: `ResponseType`,
-  fields: {
-    code: { type: GraphQLString },
-    status: { type: GraphQLString },
-    message: { type: GraphQLString },
-  },
-});
+// types
+const AuthResponseType = require(`../types/AuthResponseType`);
+const UserType = require(`../types/UserType`);
+const ResponseType = require(`../types/ResponseType`);
 
 /* ----- Resolver for SignUp ----- */
 const signup = {

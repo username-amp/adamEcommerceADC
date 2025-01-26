@@ -1,58 +1,70 @@
 const mongoose = require(`mongoose`);
 
-const productSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
+const productSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
 
-  description: {
-    type: String,
-    required: true,
-  },
+    description: {
+      type: String,
+      required: true,
+    },
 
-  category: {
-    type: String,
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Category",
-    required: true,
-  },
+    category: {
+      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
 
-  price: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
 
-  images: {
-    type: [String],
-    required: true,
-  },
+    solds: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
 
-  stock: {
-    type: Number,
-    min: 0,
-    default: 0,
-  },
+    images: {
+      type: [String],
+      required: true,
+    },
 
-  sizes: {
-    type: [String],
-  },
+    stock: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
 
-  tags: {
-    type: [String],
-    enum: [
-      "bestseller",
-      "hot_sales",
-      "new_arrival",
-      "sale",
-      "featured",
-      "limited_edition",
-      "organic",
-      "sustainable",
-      "handmade",
-    ],
+    ratings: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0,
+    },
+
+    tags: {
+      type: [String],
+      enum: [
+        "bestseller",
+        "hot_sales",
+        "new_arrival",
+        "sale",
+        "featured",
+        "limited_edition",
+        "organic",
+        "sustainable",
+        "handmade",
+      ],
+    },
   },
-});
+  { timestamps: true }
+);
 
 module.exports = mongoose.model(`Product`, productSchema);
