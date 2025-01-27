@@ -11,11 +11,14 @@ const {
   facebookSignin,
 } = require(`./resolvers/userResolvers`);
 
+const { displayProduct } = require(`./resolvers/productResolvers`);
+
 // Empty Query type (required for a valid GraphQL schema)
 const RootQuery = new GraphQLObjectType({
   name: `RootQueryType`,
   fields: {
     getUsernameByEmail,
+    displayProduct,
   },
 });
 
