@@ -1,4 +1,5 @@
-const { GraphQLObjectType, GraphQLString } = require("graphql");
+const { GraphQLObjectType, GraphQLString, GraphQLList } = require("graphql");
+const ProductType = require(`./ProductType`)
 
 const ResponseType = new GraphQLObjectType({
   name: "ResponseType",
@@ -6,6 +7,7 @@ const ResponseType = new GraphQLObjectType({
     code: { type: GraphQLString },
     status: { type: GraphQLString },
     message: { type: GraphQLString },
+    data: { type: new GraphQLList(ProductType) },
   },
 });
 

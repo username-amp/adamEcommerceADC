@@ -17,7 +17,7 @@ const ProductType = new GraphQLObjectType({
     solds: { type: GraphQLInt },
     images: { type: new GraphQLList(GraphQLString) },
     stock: { type: GraphQLInt },
-    rating: { type: GraphQLFloat },
+    ratings: { type: GraphQLFloat },
     tags: { type: new GraphQLList(GraphQLString) },
   },
 });
