@@ -67,4 +67,36 @@ const displayProduct = {
   },
 };
 
-module.exports = { displayProduct };
+/* ----- Resolver for Get Specific Product By ID ----- */
+const getProductById = {
+  type: ResponseType,
+  args: { _id: { type: GraphQLString } },
+  resolve: async (_, { _id }) => {
+    try {
+      const product = await Product.findById(_id);
+      if (!product) {
+        return {
+          code: "404",
+          status: "false",
+          message: "Product not found",
+          data: [], // Return empty array instead of null
+        };
+      }
+      return {
+        code: "200",
+        status: "true",
+        message: "Product fetched successfully",
+        data: [product], // Wrap single product in array
+      };
+    } catch (error) {
+      return {
+        code: "500",
+        status: "false",
+        message: `Error: ${error.message}`,
+        data: [],
+      };
+    }
+  },
+};
+
+module.exports = { displayProduct, getProductById };

@@ -11,7 +11,10 @@ const {
   facebookSignin,
 } = require(`./resolvers/userResolvers`);
 
-const { displayProduct } = require(`./resolvers/productResolvers`);
+const {
+  displayProduct,
+  getProductById,
+} = require(`./resolvers/productResolvers`);
 
 // Empty Query type (required for a valid GraphQL schema)
 const RootQuery = new GraphQLObjectType({
@@ -19,6 +22,7 @@ const RootQuery = new GraphQLObjectType({
   fields: {
     getUsernameByEmail,
     displayProduct,
+    getProductById,
   },
 });
 

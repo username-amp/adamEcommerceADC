@@ -63,6 +63,34 @@ const productSchema = new mongoose.Schema(
         "handmade",
       ],
     },
+
+    // new fields
+
+    hasWarranty: {
+      type: Boolean,
+      default: false,
+    },
+
+    warrantyType: {
+      type: String,
+    },
+
+    warrantyDuration: {
+      type: String,
+    },
+
+    shipsFrom: {
+      type: String,
+    },
+
+    testimonials: [
+      {
+        username: String,
+        location: String,
+        created_at: Date,
+        testimonial: String,
+      },
+    ],
   },
   { timestamps: true }
 );
